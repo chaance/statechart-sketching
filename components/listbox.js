@@ -1,5 +1,7 @@
 import { Machine } from 'xstate';
 
+// NOTE: All timing values are multiplied by 10 so it's easier to interact with in the visualizer.
+
 const selectingEvents = {
   KEY_ARROW_UP: {
     target: 'selectingWithKeys',
@@ -18,6 +20,15 @@ const selectingEvents = {
     actions: ['resetHighlightIndex']
   },
   ITEM_POINTER_DOWN: 'clickingItem',
+  ITEM_POINTER_UP: {
+    target: 'confirming',
+    cond: 'dragStarted'
+  },
+  DOC_POINTER_UP: {
+    target: 'finished',
+    actions: ['focusBox'],
+    cond: 'dragStarted'
+  },
   KEY_ENTER: {
     target: 'confirming',
     cond: 'hasHighlight'
@@ -75,9 +86,7 @@ const machine = Machine({
         },
         KEYDOWN_UP_ARROW: {
           target: 'open.selectingWithKeys',
-          actions: [
-            'focusSelectedItem' // maybe?
-          ]
+          actions: ['focusSelectedItem']
         }
       }
     },
@@ -115,27 +124,22 @@ const machine = Machine({
           }
         },
         selectingWithDrag: {
-          entry: ['listenForPointerUp'],
+          entry: ['startDrag'],
           on: {
             ...selectingEvents,
-            ITEM_POINTER_UP: {
-              target: 'confirming'
-            },
-            DOC_POINTER_UP: {
-              target: '#listbox.idle',
-              actions: ['focusBox']
-            },
             ITEM_POINTER_ENTER: {
-              target: 'selectingWithDrag',
-              actions: ['highlightItem']
+              ...selectingEvents.ITEM_POINTER_ENTER,
+              target: 'selectingWithDrag'
             },
             ITEM_POINTER_LEAVE: {
-              target: 'selectingWithDrag',
-              actions: ['resetHighlightIndex']
+              ...selectingEvents.ITEM_POINTER_LEAVE,
+              target: 'selectingWithDrag'
             }
           }
         },
-        searching: {},
+        searching: {
+          // TODO
+        },
         confirming: {
           after: {
             2000: {
