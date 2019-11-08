@@ -1,0 +1,9 @@
+{
+  "name": "statechart-sketching",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "xstate": "^4.6.7"
+  }
+}
